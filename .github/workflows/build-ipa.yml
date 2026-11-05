@@ -36,4 +36,4 @@ jobs:
           ALLOW_OTHER_METAL: True
           PYTHONUNBUFFERED: "1"
         run: |
-          python3 scripts/build.py --target ios
+          python3 build.py --target ios
