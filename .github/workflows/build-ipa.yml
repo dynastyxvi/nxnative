@@ -14,6 +14,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
       - name: Set up Build Dependencies
         run: |
           xcodebuild -downloadComponent MetalToolchain || true
@@ -32,7 +37,8 @@ jobs:
 
       - name: Build IPA
         run: |
-          ALLOW_OTHER_METAL=True python3 scripts/build_ipa_from_nsp.py ~/Games/InputGame -k ~/.switch/prod.keys
+          export ALLOW_OTHER_METAL=True
+          python3 scripts/build_ipa_from_nsp.py ~/Games/InputGame -k ~/.switch/prod.keys --allow-other-metal
 
       - name: Upload Output Artifact
         uses: actions/upload-artifact@v4
