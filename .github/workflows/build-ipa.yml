@@ -20,7 +20,6 @@ jobs:
           key: macOS-nxnative-shaders-${{ hashFiles('**/shader/**') }}
           restore-keys: |
             macOS-nxnative-shaders-
-          save-always: true
 
       - name: Install and Pin Glslang
         run: |
@@ -35,6 +34,6 @@ jobs:
       - name: Run Build Script
         env:
           ALLOW_OTHER_METAL: True
+          PYTHONUNBUFFERED: "1"
         run: |
-          # Replace this line with your actual build/compile command
-          echo "Starting iOS build pipeline..."
+          python3 scripts/build.py --target ios
