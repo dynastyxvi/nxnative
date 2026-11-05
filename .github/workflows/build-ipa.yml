@@ -1,59 +1,39 @@
-name: Cloud Build nxnative IPA
+name: Build iOS IPA
 
 on:
-  workflow_dispatch:
-    inputs:
-      game_url:
-        description: 'Google Drive Share Link or Direct Link'
-        required: true
+  push:
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: macos-14
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Select Xcode Version
-        run: |
-          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
-
-      - name: Set up .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-
-      - name: Cache Build and Shaders
+      - name: Cache iOS Shaders
         uses: actions/cache@v4
         with:
-          path: |
-            ~/Games/InputGame/*_build
-          key: ${{ runner.os }}-nxnative-shaders-${{ hashFiles('scripts/build_ipa_from_nsp.py') }}
+          path: /Users/runner/Games/InputGame/0100000000010000_build/shader/ios/
+          key: macOS-nxnative-shaders-${{ hashFiles('**/shader/**') }}
           restore-keys: |
-            ${{ runner.os }}-nxnative-shaders-
+            macOS-nxnative-shaders-
+          save-always: true
 
-      - name: Set up Build Dependencies
+      - name: Install and Pin Glslang
         run: |
-          brew install xcodegen zstd glslang
-          python3 -m pip install lz4 capstone fonttools nsz zbic gdown --break-system-packages
+          brew install glslang || true
+          brew pin glslang
+          glslangValidator --version
 
-      - name: Write Keys
+      - name: Create Shader Output Directory
         run: |
-          mkdir -p ~/.switch
-          echo "${{ secrets.PROD_KEYS }}" > ~/.switch/prod.keys
+          mkdir -p /Users/runner/Games/InputGame/0100000000010000_build/shader/ios/
 
-      - name: Download Game File
+      - name: Run Build Script
+        env:
+          ALLOW_OTHER_METAL: True
         run: |
-          mkdir -p ~/Games/InputGame
-          gdown "${{ github.event.inputs.game_url }}" -O ~/Games/InputGame/game.nsp
-
-      - name: Build IPA
-        run: |
-          export ALLOW_OTHER_METAL=True
-          python3 scripts/build_ipa_from_nsp.py ~/Games/InputGame -k ~/.switch/prod.keys --allow-other-metal --no-motion
-
-      - name: Upload Output Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: compiled-game-ipa
-          path: ~/Games/InputGame/*.ipa
+          # Add your build script or command here
+          echo "Starting build..."
