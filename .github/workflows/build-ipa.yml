@@ -19,6 +19,15 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Cache Build and Shaders
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Games/InputGame/*_build
+          key: ${{ runner.os }}-nxnative-shaders-${{ hashFiles('scripts/build_ipa_from_nsp.py') }}
+          restore-keys: |
+            ${{ runner.os }}-nxnative-shaders-
+
       - name: Set up Build Dependencies
         run: |
           xcodebuild -downloadComponent MetalToolchain || true
