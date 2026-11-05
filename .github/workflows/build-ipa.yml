@@ -32,7 +32,7 @@ jobs:
 
       - name: Build IPA
         run: |
-          python3 scripts/build_ipa_from_nsp.py ~/Games/InputGame -k ~/.switch/prod.keys
+          ALLOW_OTHER_METAL=True python3 scripts/build_ipa_from_nsp.py ~/Games/InputGame -k ~/.switch/prod.keys
 
       - name: Upload Output Artifact
         uses: actions/upload-artifact@v4
