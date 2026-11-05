@@ -31,9 +31,22 @@ jobs:
         run: |
           mkdir -p /Users/runner/Games/InputGame/0100000000010000_build/shader/ios/
 
-      - name: Run Build Script
+      - name: Auto-locate and Run Build Script
         env:
           ALLOW_OTHER_METAL: True
           PYTHONUNBUFFERED: "1"
         run: |
-          python3 build.py --target ios
+          python3 -c "
+          import glob, os, subprocess, sys
+          print('Scanning workspace for build scripts...')
+          candidates = glob.glob('**/build*.py', recursive=True) + glob.glob('**/ios*.py', recursive=True)
+          valid_matches = [m for m in candidates if 'site-packages' not in m and '.venv' not in m and 'env' not in m]
+          print('Found potential scripts:', valid_matches)
+          if not valid_matches:
+              print('Error: Could not locate any build script in the repository!')
+              sys.exit(1)
+          script_path = valid_matches[0]
+          print(f'Running target script: {script_path}')
+          result = subprocess.run([sys.executable, script_path, '--target', 'ios'])
+          sys.exit(result.returncode)
+          "
