@@ -1,0 +1,41 @@
+name: Cloud Build nxnative IPA
+
+on:
+  workflow_dispatch:
+    inputs:
+      game_url:
+        description: 'Direct Download Link for .nsp file'
+        required: true
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Build Dependencies
+        run: |
+          xcodebuild -downloadComponent MetalToolchain || true
+          brew install xcodegen zstd glslang
+          python3 -m pip install lz4 capstone fonttools nsz zbic
+
+      - name: Write Keys
+        run: |
+          mkdir -p ~/.switch
+          echo "${{ secrets.PROD_KEYS }}" > ~/.switch/prod.keys
+
+      - name: Download Game File
+        run: |
+          mkdir -p ~/Games/InputGame
+          curl -L "${{ github.event.inputs.game_url }}" -o ~/Games/InputGame/game.nsp
+
+      - name: Build IPA
+        run: |
+          python3 scripts/build_ipa_from_nsp.py ~/Games/InputGame -k ~/.switch/prod.keys
+
+      - name: Upload Output Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-game-ipa
+          path: ~/Games/InputGame/*.ipa
