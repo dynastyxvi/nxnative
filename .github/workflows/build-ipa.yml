@@ -3,6 +3,7 @@ name: Build iOS IPA
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -35,5 +36,5 @@ jobs:
         env:
           ALLOW_OTHER_METAL: True
         run: |
-          # Add your build script or command here
-          echo "Starting build..."
+          # Replace this line with your actual build/compile command
+          echo "Starting iOS build pipeline..."
