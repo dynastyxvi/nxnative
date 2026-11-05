@@ -38,7 +38,7 @@ jobs:
       - name: Build IPA
         run: |
           export ALLOW_OTHER_METAL=True
-          python3 scripts/build_ipa_from_nsp.py ~/Games/InputGame -k ~/.switch/prod.keys --allow-other-metal
+          python3 scripts/build_ipa_from_nsp.py ~/Games/InputGame -k ~/.switch/prod.keys --allow-other-metal --no-motion
 
       - name: Upload Output Artifact
         uses: actions/upload-artifact@v4
