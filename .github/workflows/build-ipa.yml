@@ -10,8 +10,10 @@ jobs:
     runs-on: macos-14
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout Repository with Submodules
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Cache iOS Shaders
         uses: actions/cache@v4
@@ -31,9 +33,38 @@ jobs:
         run: |
           mkdir -p /Users/runner/Games/InputGame/0100000000010000_build/shader/ios/
 
-      - name: Run Build Script
+      - name: Run Build Script with Auto-Discovery & Retries
         env:
           ALLOW_OTHER_METAL: True
           PYTHONUNBUFFERED: "1"
         run: |
-          python3 build.py --target ios
+          python3 -c "
+          import glob, os, subprocess, sys, time
+
+          print('Scanning workspace for build scripts...')
+          candidates = glob.glob('**/build*.py', recursive=True) + glob.glob('**/ios*.py', recursive=True)
+          valid_matches = [m for m in candidates if 'site-packages' not in m and '.venv' not in m and 'env' not in m]
+          print('Found potential scripts:', valid_matches)
+          
+          if not valid_matches:
+              print('Error: Could not locate any build script in the repository!')
+              sys.exit(1)
+              
+          script_path = valid_matches[0]
+          print(f'Running target script: {script_path}')
+
+          max_retries = 3
+          for attempt in range(1, max_retries + 1):
+              print(f'Execution attempt {attempt} of {max_retries}...')
+              result = subprocess.run([sys.executable, script_path, '--target', 'ios'])
+              if result.returncode == 0:
+                  print('Build script completed successfully.')
+                  sys.exit(0)
+              print(f'Attempt {attempt} failed with exit code {result.returncode}.')
+              if attempt < max_retries:
+                  print('Retrying in 5 seconds...')
+                  time.sleep(5)
+          
+          print('All retry attempts failed.')
+          sys.exit(1)
+          "
