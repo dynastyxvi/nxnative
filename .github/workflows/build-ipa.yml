@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       game_url:
-        description: 'Direct Download Link for .nsp file'
+        description: 'Google Drive Share Link or Direct Link'
         required: true
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
         run: |
           xcodebuild -downloadComponent MetalToolchain || true
           brew install xcodegen zstd glslang
-          python3 -m pip install lz4 capstone fonttools nsz zbic --break-system-packages
+          python3 -m pip install lz4 capstone fonttools nsz zbic gdown --break-system-packages
 
       - name: Write Keys
         run: |
@@ -28,7 +28,7 @@ jobs:
       - name: Download Game File
         run: |
           mkdir -p ~/Games/InputGame
-          curl -L "${{ github.event.inputs.game_url }}" -o ~/Games/InputGame/game.nsp
+          gdown "${{ github.event.inputs.game_url }}" -O ~/Games/InputGame/game.nsp
 
       - name: Build IPA
         run: |
